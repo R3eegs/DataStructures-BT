@@ -11,7 +11,7 @@ import java.awt.Graphics;
 
 public class Tour implements TourInterface
 {
-    // instance variables
+    // Instance variables
     //Number of points in the Tour
     private int count;
     //Holds the first point in the Tour
@@ -19,38 +19,70 @@ public class Tour implements TourInterface
     //Holds the last point in the Tour
     private ListNode rear;
     
-    // constructor
+    // Constructor of the Tour
     public Tour()
     {
+        //Sets the size of the tour and the first and last point 
+        //before any point is added
         count = 0;
         front = null;
         rear = null;
     }
         
-    //return the number of points (nodes) in the list   
+    //Return the number of points (nodes) in the list   
     public int size()
     {
         return count;
     }
 
-    // append Point p to the end of the list
+    // Append Point p to the end of the list
     public void add(Point p)
     {
+        //creates ListNode n to hold Point p
         ListNode n = new ListNode(p);
+        //Checks if the list is empty by checking rear
         if(rear == null){
+            //Sets front to n to set it as the first point if the list is empty
             front = n;
         } else{
+            //If the list isn't empty, this n appends it to the end of the list
             rear.setNext(n);
         }
+        //Sets rear to n to make sure that it is the last point in the list
         rear = n;
+        //Increases the size of the list
         count++;
     } 
+    
+    /* This inserts a ListNode between two ListNodes
+     * This works by replacing f's next variable with r instead of re
+     * Then it sets r's next variable to re to make sure that re is still accessible
+     * Obviously, it also increments size to show that a point has been added
+     */
+    public void addBetween(ListNode r, ListNode f, ListNode re)
+    {
+        f.setNext(r);
+        r.setNext(re);
+        count++;
+    }
+    
+    /*
+     * This method removes a ListNode from between two ListNodes
+     * This is performed by just setting f's next to re to get 
+     * rid of the ListNode/s in between them
+     * Obviously, it also deincrements the size to show that a point has been removed
+     */
+    public void remove(ListNode f, ListNode re)
+    {
+        f.setNext(re);
+        count--;
+    }
     
     // print every node in the list 
     public void print()
     {   
-        ListNode printer = front;
-        for(int i = 0; i < count; count++){
+        //This is a copy of the front variable to instantiate through the list
+        for(ListNode printer = front; printer != null; printer = printer.getNext()){
             if(!(printer==null)){
                 System.out.println(printer.getData().toString());
                 printer = printer.getNext();
@@ -65,7 +97,7 @@ public class Tour implements TourInterface
             return;
         ListNode printer = front;
         while(printer != null){
-            g.fillOval( (int) (printer.getData().getX())-2, (int) (printer.getData()).getY()-2, 4, 4);
+            g.fillOval( (int) (printer.getData().getX()), (int) (printer.getData()).getY(), 4, 4);
             printer = printer.getNext();
         }
         ListNode line = front;
@@ -79,81 +111,117 @@ public class Tour implements TourInterface
     //calculate the distance of the Tour, but summing up the distance between adjacent points
     //NOTE p.distance(p2) gives the distance where p and p2 are of type Point
     public double distance()
-    {
-        if(front == null)
-            return -1.0;
-        double tD = 0;
-        ListNode l = front;
-        while(l.getNext() != null){
-            tD += l.getData().distance(l.getNext().getData());
-            l = l.getNext();
+        {
+            if(front == null)
+            return 0;
+        
+            double tD = 0;
+            ListNode l = front;
+            while(l.getNext() != null){
+                tD += l.getData().distance(l.getNext().getData());
+                l = l.getNext();
+            }
+            tD += l.getData().distance(front.getData());
+            return tD;
         }
-        tD += l.getData().distance(front.getData());
-        return tD;
-    }
-
+    
+    
     // add Point p to the list according to the NearestNeighbor heuristic
     public void insertNearest(Point p)
     {   
-        if(front == null){
-            add(p);
-            return;
-        }
+         if(front == null)
+         {
+             add(p);
+             return;
+         }
+         ListNode c = front;
+         ListNode track = c;
+         double nearest = front.getData().distance(p);
+         while(c.getNext() != null)
+         {
+             c = c.getNext();
+             if(nearest > c.getData().distance(p))
+             {
+                 track = c;
+                 nearest = c.getData().distance(p);
+             }
+             
+         }
+         if(track.getNext() == null)
+         {
+             add(p);
+             return;
+         }
+         ListNode temp = track.getNext();
+         ListNode lNode = new ListNode(p);
+         track.setNext(lNode);
+         lNode.setNext(temp);
+         count++;
         
-        ListNode c;
-        ListNode tracker = front;
-        double nearest = (front.getData().distance(p));
-        for(c = front; c != null; c = c.getNext()){
-            double d = (c.getData().distance(p));
-            if(nearest >  d){
-                tracker = c;
-                nearest =  d;
-            }          
-        }
-        if( tracker.getNext() == null){
-            add(p);
-            return;
-        }
-        c = new ListNode(p);
-        c.setNext(tracker.getNext());
-        tracker.setNext(c);
-        count++;
     }
-    
-        
-    // add Point p to the list according to the InsertSmallest heuristic
     public void insertSmallest(Point p)
     { 
-        if(front == null){
-            add(p);
-            return;
-        } 
-        ListNode tracker = rear;
+        if(front == null || front.getNext() == null)
+        {
+         add(p); 
+         return;
+        }
         
-        ListNode insert = new ListNode(p);
-        double min = insert.getData().distance(tracker.getData())+insert.getData().distance(front.getData());
-        for(ListNode c = front; c.getNext() != null; c = c.getNext()){
-            double tempD = insert.getData().distance(c.getData())+insert.getData().distance(c.getNext().getData());
-            if( tempD < min){
-                tracker = c;
-                min = tempD;
+        ListNode pNode = new ListNode(p);
+        double nearD = 0;
+        ListNode trackF = front;
+        ListNode trackR = front.getNext();
+        ListNode c = front;
+        
+        while(c != null){
+            ListNode l = c.getNext();
+            addBetween(pNode, c, l);
+            //double nd = distance();
+            double nd = 0;
+            if(l != null){
+                nd = c.getData().distance(p) + l.getData().distance(p) - c.getData().distance(l.getData());
+            }else {
+                nd = front.getData().distance(p) + rear.getData().distance(p) - front.getData().distance(rear.getData());
             }
-        }
-        if( tracker.getNext() == null){
+            
+            
+            if(nearD == 0)
+                {
+                    nearD = nd;
+                }
+            if(nd < nearD)
+                {
+                    nearD = nd;
+                    trackF = c;
+                    trackR = l;
+                    remove(c, l);
+                }
+            else
+                {
+                    remove(c, l);
+                }
+             c = c.getNext();
+            }
+           
+        
+        if(trackR == null)
+        {
             add(p);
             return;
         }
-        insert.setNext(tracker.getNext());
-        tracker.setNext(insert);
-        count++;
-    }
-    
+        addBetween(pNode, trackF, trackR);
+        
+        }
     
     // This is a private inner class, which is a separate class within a class.
     private class ListNode
     {
         private Point data;
         private ListNode next;
+        /*Constructs a ListNode that holds the point it will represent in the list
+         * It also holds a connection to another ListNode that represents 
+         * the 
+         */
         public ListNode(Point p, ListNode n)
         {
             this.data = p;
@@ -169,16 +237,16 @@ public class Tour implements TourInterface
             next = n;
         }
         
-        public void setData(Point p){
-            data = p;
-        }
-        
         public Point getData(){
             return data;
         }
         
         public ListNode getNext(){
             return next;
+        }
+        public void setData(Point p)
+        {
+            data = p;
         }
     }
     
