@@ -70,7 +70,7 @@ public class Tour implements TourInterface
      * This method removes a ListNode from between two ListNodes
      * This is performed by just setting f's next to re to get 
      * rid of the ListNode/s in between them
-     * Obviously, it also deincrements the size to show that a point has been removed
+     * Obviously, it also decrements the size to show that a point has been removed
      */
     public void remove(ListNode f, ListNode re)
     {
@@ -93,37 +93,40 @@ public class Tour implements TourInterface
     // draw the tour using the given graphics context
     public void draw(Graphics g)
     {
-        if(front == null)
+        if(front == null) //checks if the list is empty and ends the method if it is empty
             return;
-        ListNode printer = front;
+        ListNode printer = front; //copy of the list to instatiate through and get values
         while(printer != null){
+            //draws circles at the location of each point to mark their locations
             g.fillOval( (int) (printer.getData().getX()), (int) (printer.getData()).getY(), 4, 4);
-            printer = printer.getNext();
+            printer = printer.getNext(); //moves forward in the loop to check the next point in the list
         }
-        ListNode line = front;
-        while(!(line == rear)){
+        ListNode line = front; //copy of the list to instatiate through and get values
+        while(!(line == rear)){ //loops through until the end of the list to make sure all points between first and last points are commected
+            //draws a line between points until it reaches rear to make everything connected except for the first and last points
             g.drawLine((int) (line.getData().getX()), (int) (line.getData().getY()),(int) (line.getNext().getData().getX()),(int) (line.getNext().getData().getY()));
-            line = line.getNext();
+            line = line.getNext(); //moves forward in the loop to draw the next line in the list
         }
+        //draws a line between the first and last point to make sure all points are connected
         g.drawLine((int) (front.getData().getX()), (int) (front.getData().getY()),(int) (rear.getData().getX()), (int) (rear.getData().getY()));
     }
     
     //calculate the distance of the Tour, but summing up the distance between adjacent points
     //NOTE p.distance(p2) gives the distance where p and p2 are of type Point
     public double distance()
-        {
-            if(front == null)
+    {
+        if(front == null) //checks if the list is empty and ends the method if it is empty
             return 0;
-        
-            double tD = 0;
-            ListNode l = front;
-            while(l.getNext() != null){
-                tD += l.getData().distance(l.getNext().getData());
-                l = l.getNext();
-            }
-            tD += l.getData().distance(front.getData());
-            return tD;
+        double tD = 0; //sum variable that stores the overall sum of the Tour 
+        ListNode l = front; //copy of the list to instatiate through and get values
+        while(l.getNext() != null){ //loops through the list to get the distance between the values of all connections in the list except for the distance betweent the first and last points
+            //adds the distance between all points except the distance between the first and last point
+            tD += l.getData().distance(l.getNext().getData());
+            l = l.getNext(); //moves forward in the loop to check the distance of the next line in the list
         }
+        tD += l.getData().distance(front.getData()); //adds the distance between the first and last points
+        return tD; //returns total distance of the Tour
+    }
     
     
     // add Point p to the list according to the NearestNeighbor heuristic
@@ -218,10 +221,6 @@ public class Tour implements TourInterface
     {
         private Point data;
         private ListNode next;
-        /*Constructs a ListNode that holds the point it will represent in the list
-         * It also holds a connection to another ListNode that represents 
-         * the 
-         */
         public ListNode(Point p, ListNode n)
         {
             this.data = p;
@@ -233,21 +232,26 @@ public class Tour implements TourInterface
             this(p, null);
         }
         
+        //sets the next variable of the ListNode to a ListNode
         public void setNext(ListNode n){
             next = n;
         }
         
+        //sets the data variable of the ListNode to a point
+        public void setData(Point p){
+            data = p;
+        }
+        
+        //returns the ListNode's data variable
         public Point getData(){
             return data;
         }
         
+        //returns the ListNode's next variable
         public ListNode getNext(){
             return next;
         }
-        public void setData(Point p)
-        {
-            data = p;
-        }
+        
     }
     
     
